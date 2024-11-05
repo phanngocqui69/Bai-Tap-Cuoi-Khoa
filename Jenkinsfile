@@ -1,16 +1,16 @@
 pipeline {
     agent any
     environment {
-        GIT_BRANCH = "staging" // Nhanh git build
-        GIT_REPO_NAME = "github.com/robusta-course/web-nginx-docker-hub-bai-tap-4"
+        GIT_BRANCH = "prod" // Nhanh git build
+        GIT_REPO_NAME = "github.com/phanngocqui69/bai-tap-cuoi-khoa"
         TELEGRAM_BOT_TOKEN = credentials('telegram-token') // Telegram bot access token
         TELEGRAM_CHAT_ID = credentials('telegram-chat-id') // Telegram bot chat id
-        DOCKER_ENDPOINT = "nhontrnguyen" //Docker user Hub hoac Docker Private Resistry ENDPOINT
+        DOCKER_ENDPOINT = "phanngocqui69" //Docker user Hub hoac Docker Private Resistry ENDPOINT
         DOCKER_NAME = "nginx-jenkins-${GIT_BRANCH}"
         VERSION = "1.0"
         TAG = "${VERSION}.${env.BUILD_NUMBER}.${GIT_BRANCH}"
         IMAGE_NAME = "${DOCKER_ENDPOINT}/${DOCKER_NAME}"
-        SSH_USER = 'admin01'
+        SSH_USER = 'lee'
         }
     stages {
         stage('Clone Repository') {
@@ -67,12 +67,12 @@ pipeline {
                 
                         sh '''
                             #!/bin/bash
-                            server='192.168.3.110'
+                            server='192.168.84.154'
                                 echo "Deploying to server: $server"
                                 ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker pull ${IMAGE_NAME}:${TAG}"
                                 ssh -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker stop ${DOCKER_NAME} || true"
                                 ssh -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker rm ${DOCKER_NAME} || true"
-                                ssh -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker run -d --name ${DOCKER_NAME} -p 8901:80 ${IMAGE_NAME}:${TAG}"
+                                ssh -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker run -d --name ${DOCKER_NAME} -p 8903:80 ${IMAGE_NAME}:${TAG}"
                         '''
                         
                      }
@@ -84,14 +84,14 @@ pipeline {
         success {
             script {
                 sh """
-                curl -X POST -H 'Content-Type: application/json' -d '{"chat_id": "${TELEGRAM_CHAT_ID}", "text": "✅✅✅Build ${currentBuild.result}\nJob name: ${currentBuild.fullDisplayName}\nBranch: ${GIT_BRANCH}\nJob url: ${env.BUILD_URL}", "disable_notification": false}' https://api.telegram.org/${TELEGRAM_BOT_TOKEN}/sendMessage
+                curl -X POST -H 'Content-Type: application/json' -d '{"chat_id": "${TELEGRAM_CHAT_ID}", "text": "✅✅✅Build ${currentBuild.result}\nJob name: ${currentBuild.fullDisplayName}\nBranch: ${GIT_BRANCH}\nJob url: ${env.BUILD_URL}", "disable_notification": false}' https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage
                 """
             }
         }
         failure {
             script {
                 sh """
-                curl -X POST -H 'Content-Type: application/json' -d '{"chat_id": "${TELEGRAM_CHAT_ID}", "text": "❌❌❌Build ${currentBuild.result} \nJob name: ${currentBuild.fullDisplayName}\nBranch: ${GIT_BRANCH}\nJob url: ${env.BUILD_URL}", "disable_notification": false}' https://api.telegram.org/${TELEGRAM_BOT_TOKEN}/sendMessage
+                curl -X POST -H 'Content-Type: application/json' -d '{"chat_id": "${TELEGRAM_CHAT_ID}", "text": "❌❌❌Build ${currentBuild.result} \nJob name: ${currentBuild.fullDisplayName}\nBranch: ${GIT_BRANCH}\nJob url: ${env.BUILD_URL}", "disable_notification": false}' https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage
                 """
             }
         }
