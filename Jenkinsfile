@@ -13,15 +13,16 @@ pipeline {
         IMAGE_NAME = "${DOCKER_ENDPOINT}/${DOCKER_NAME}"
         SSH_USER = 'lee'
         }
-    stage('Approval Required') {
-        steps {
+    stages {
+        
+        stage('Approval Required') {
+            steps {
             script {
                 // Pause the pipeline and wait for user input
                 input message: "Do you want to proceed to the Deploy stage?", ok: "Proceed"
+                }
             }
         }
-    }
-    stages {
         stage('Clone Repository') {
             steps {
                 withCredentials([string(credentialsId: 'github-secret-token', variable: 'GITHUB_TOKEN')]) {
