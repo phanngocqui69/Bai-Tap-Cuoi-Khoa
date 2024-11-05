@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
     environment {
@@ -12,6 +13,14 @@ pipeline {
         IMAGE_NAME = "${DOCKER_ENDPOINT}/${DOCKER_NAME}"
         SSH_USER = 'lee'
         }
+    stage('Approval Required') {
+        steps {
+            script {
+                // Pause the pipeline and wait for user input
+                input message: "Do you want to proceed to the Deploy stage?", ok: "Proceed"
+            }
+        }
+    }
     stages {
         stage('Clone Repository') {
             steps {
@@ -67,12 +76,15 @@ pipeline {
                 
                         sh '''
                             #!/bin/bash
-                            server='192.168.84.154'
+                            SERVERS='192.168.84.138 192.168.84.154'
+
+                            for server in $SERVERS; do
                                 echo "Deploying to server: $server"
                                 ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker pull ${IMAGE_NAME}:${TAG}"
                                 ssh -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker stop ${DOCKER_NAME} || true"
                                 ssh -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker rm ${DOCKER_NAME} || true"
-                                ssh -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker run -d --name ${DOCKER_NAME} -p 8903:80 ${IMAGE_NAME}:${TAG}"
+                                ssh -i ${SSH_KEY_PATH} ${SSH_USER}@$server "sudo docker run -d --name ${DOCKER_NAME} -p 8901:80 ${IMAGE_NAME}:${TAG}"
+                            done
                         '''
                         
                      }
