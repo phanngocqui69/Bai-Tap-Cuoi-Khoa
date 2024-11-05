@@ -14,15 +14,6 @@ pipeline {
         SSH_USER = 'lee'
         }
     stages {
-        
-        stage('Approval Required') {
-            steps {
-            script {
-                // Pause the pipeline and wait for user input
-                input message: "Do you want to proceed to the Deploy stage?", ok: "Proceed"
-                }
-            }
-        }
         stage('Clone Repository') {
             steps {
                 withCredentials([string(credentialsId: 'github-secret-token', variable: 'GITHUB_TOKEN')]) {
@@ -68,6 +59,14 @@ pipeline {
                         }
                     }
                 }
+        }
+        stage('Approval Required') {
+            steps {
+            script {
+                // Pause the pipeline and wait for user input
+                input message: "Do you want to proceed to the Deploy stage?", ok: "Proceed"
+                }
+            }
         }
         stage('Deploy to Servers') {
             steps {
